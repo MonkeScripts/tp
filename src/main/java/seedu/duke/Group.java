@@ -30,11 +30,15 @@ public class Group {
      */
     public static Optional<Group> getOrCreateGroup(String groupName) {
         // Check if user is accessing a group they are already in
-        getCurrentGroup().ifPresent(currentGroup -> {
-            if (currentGroup.getGroupName().equals(groupName)) {
-                System.out.println("You are in " + groupName);
-            }
-        });
+        getCurrentGroup().filter(
+                group -> group.getGroupName().equals(groupName))
+                .map(group -> {
+                    System.out.println("You are in " + group.getGroupName());
+                    return group;
+                }).orElseGet(() -> {
+
+                });
+
 
         // If the user is in a different group, prevent them from creating or joining a new group.
         if (isInGroup()) {
@@ -68,14 +72,15 @@ public class Group {
      */
 
     public static Optional<Group> enterGroup(String groupName) {
-        Optional<Group> group = Optional.ofNullable(groups.get(groupName));
-        if (group.isEmpty()) {
-            System.out.println("Group does not exist.");
-            return group;
-        }
-        currentGroupName = Optional.of(groupName);
-        System.out.println("You are now in " + groupName);
-        return group;
+        return Optional.ofNullable(groups.get(groupName))
+                .map(group -> {
+                    System.out.println("You are now in " + group.getGroupName());
+                    return group;
+                })
+                .or(() -> {
+                    System.out.println("Group does not exist.");
+                    return Optional.empty();
+                });
     }
 
     /**
